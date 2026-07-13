@@ -1,0 +1,81 @@
+# =============================
+# Java / Maven
+# =============================
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+*.nar
+hs_err_pid*
+replay_pid*
+
+# Maven wrapper
+.mvn/
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+
+# =============================
+# Node.js / Next.js (frontend)
+# =============================
+node_modules/
+.next/
+out/
+.nuxt/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# =============================
+# Environment / Secrets
+# =============================
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+
+# =============================
+# IDE / Editor
+# =============================
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+
+# =============================
+# Build artifacts
+# =============================
+build/
+*.tmp
+*.bak
+*.swp
+
+# =============================
+# Docker
+# =============================
+# (docker-compose.yml is intentionally tracked)
+
+# =============================
+# Testcontainers / Test reports
+# =============================
+.testcontainers/
+surefire-reports/
+README.md
+TradeForge_Step_by_Step_Task_List.md

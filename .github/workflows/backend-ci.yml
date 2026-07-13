@@ -1,0 +1,85 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+
+jobs:
+  build-and-test:
+    name: Build & Test (Java 21)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: tradeforge_test
+          POSTGRES_USER: tradeforge
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U tradeforge -d tradeforge_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+          cache: maven
+
+      - name: Build and run unit tests
+        working-directory: backend
+        run: mvn -B test --no-transfer-progress
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/tradeforge_test
+          SPRING_DATASOURCE_USERNAME: tradeforge
+          SPRING_DATASOURCE_PASSWORD: test_password
+          JWT_SECRET: ci_test_secret_replace_in_production_32chars
+
+      - name: Run integration tests
+        working-directory: backend
+        run: mvn -B verify -Pfailsafe --no-transfer-progress
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          JWT_SECRET: ci_test_secret_replace_in_production_32chars
+        continue-on-error: false
+
+      - name: Generate JaCoCo coverage report
+        working-directory: backend
+        run: mvn -B jacoco:report --no-transfer-progress
+        if: always()
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jacoco-report
+          path: backend/target/site/jacoco/
+
+      - name: Build production JAR
+        working-directory: backend
+        run: mvn -B package -DskipTests --no-transfer-progress
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tradeforge-backend-jar
+          path: backend/target/*.jar
+          retention-days: 7

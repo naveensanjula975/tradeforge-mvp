@@ -1,0 +1,63 @@
+spring:
+  application:
+    name: tradeforge-backend
+
+  # ── JPA / Hibernate ──────────────────────────────────────────────────────
+  jpa:
+    hibernate:
+      ddl-auto: validate          # Flyway owns the schema; Hibernate only validates
+    show-sql: false               # Overridden per-profile
+    open-in-view: false           # Prevent lazy-loading issues in REST layer
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          time_zone: UTC
+
+  # ── Flyway ───────────────────────────────────────────────────────────────
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+    out-of-order: false
+
+  # ── Jackson ──────────────────────────────────────────────────────────────
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+  # ── Security ─────────────────────────────────────────────────────────────
+  security:
+    user:
+      name: disabled        # Disable default Spring Security user
+      password: disabled
+
+# ── Actuator ─────────────────────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+  info:
+    env:
+      enabled: true
+
+# ── Application JWT config (values from environment) ─────────────────────────
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration-ms: ${JWT_EXPIRATION_MS:3600000}
+
+# ── Logging defaults ──────────────────────────────────────────────────────────
+logging:
+  level:
+    root: WARN
+    com.tradeforge: INFO
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN

@@ -105,4 +105,37 @@ public class UserService {
         String token = jwtService.generateToken(user.getId(), user.getEmail(), user.getRole().name());
         return AuthResponse.of(token, jwtService.getExpirationMs(), user.getId(), user.getEmail(), user.getRole().name());
     }
+
+    /**
+     * Retrieve user profile details.
+     */
+    @Transactional(readOnly = true)
+    public com.tradeforge.auth.web.dto.UserProfileResponse getUserProfile(java.util.UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new com.tradeforge.common.exception.ResourceNotFoundException(
+                        ErrorCode.USER_NOT_FOUND,
+                        "User not found for ID: " + userId));
+        return com.tradeforge.auth.web.dto.UserProfileResponse.from(user);
+    }
+
+    /**
+     * Change user password.
+     */
+    @Transactional
+    public void changePassword(java.util.UUID userId, com.tradeforge.auth.web.dto.ChangePasswordRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new com.tradeforge.common.exception.ResourceNotFoundException(
+                        ErrorCode.USER_NOT_FOUND,
+                        "User not found for ID: " + userId));
+
+        if (!passwordEncoder.matches(request.oldPassword(), user.getPasswordHash())) {
+            throw new BusinessRuleException(
+                    ErrorCode.AUTHENTICATION_FAILED,
+                    "Incorrect old password.");
+        }
+
+        user.updatePassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+        log.info("Password changed for user [{}]", userId);
+    }
 }

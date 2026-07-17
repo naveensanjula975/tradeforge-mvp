@@ -12,6 +12,18 @@ export const authApi = {
 
   login: (data: LoginRequest) =>
     apiClient.post<AuthResponse>('/api/v1/auth/login', data).then((r) => r.data),
+
+  me: () =>
+    apiClient.get<{
+      id: string;
+      name: string;
+      email: string;
+      role: string;
+      createdAt: string;
+    }>('/api/v1/auth/me').then((r) => r.data),
+
+  changePassword: (data: any) =>
+    apiClient.post<void>('/api/v1/auth/password', data).then((r) => r.data),
 };
 
 // ─── Instruments ──────────────────────────────────────────────────────────────
@@ -67,4 +79,23 @@ export const tradesApi = {
 export const portfolioApi = {
   get: () =>
     apiClient.get<Portfolio>('/api/v1/portfolio/me').then((r) => r.data),
+};
+
+// ─── Account ──────────────────────────────────────────────────────────────────
+export const accountApi = {
+  get: () =>
+    apiClient.get<Account>('/api/v1/account').then((r) => r.data),
+
+  positions: () =>
+    apiClient.get<Position[]>('/api/v1/account/positions').then((r) => r.data),
+
+  statement: () =>
+    apiClient.get<{
+      accountId: string;
+      balance: string;
+      buyingPower: string;
+      totalPositionValue: string;
+      totalPortfolioValue: string;
+      totalPnL: string;
+    }>('/api/v1/account/statement').then((r) => r.data),
 };

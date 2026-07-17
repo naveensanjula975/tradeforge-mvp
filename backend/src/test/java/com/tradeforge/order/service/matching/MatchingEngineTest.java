@@ -23,6 +23,7 @@ class MatchingEngineTest {
     private OrderRepository orderRepository;
     private InstrumentRepository instrumentRepository;
     private MatchingService matchingService;
+    private MarketDataPublisher marketDataPublisher;
     private MatchingEngine matchingEngine;
 
     @BeforeEach
@@ -30,7 +31,8 @@ class MatchingEngineTest {
         orderRepository = Mockito.mock(OrderRepository.class);
         instrumentRepository = Mockito.mock(InstrumentRepository.class);
         matchingService = Mockito.mock(MatchingService.class);
-        matchingEngine = new MatchingEngine(orderRepository, instrumentRepository, matchingService);
+        marketDataPublisher = Mockito.mock(MarketDataPublisher.class);
+        matchingEngine = new MatchingEngine(orderRepository, instrumentRepository, matchingService, marketDataPublisher);
     }
 
     @Test

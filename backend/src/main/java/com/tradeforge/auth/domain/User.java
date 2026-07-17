@@ -80,6 +80,13 @@ public class User {
         return user;
     }
 
+    public void updatePassword(String newPasswordHash) {
+        if (newPasswordHash == null || newPasswordHash.isBlank()) {
+            throw new IllegalArgumentException("New password hash must not be blank.");
+        }
+        this.passwordHash = newPasswordHash;
+    }
+
     // ── Domain methods ────────────────────────────────────────────────────────
 
     /**

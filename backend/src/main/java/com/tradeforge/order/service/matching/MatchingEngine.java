@@ -24,6 +24,7 @@ public class MatchingEngine {
     private final OrderRepository orderRepository;
     private final InstrumentRepository instrumentRepository;
     private final MatchingService matchingService;
+    private final MarketDataPublisher marketDataPublisher;
 
     private final Map<String, OrderBook> books = new ConcurrentHashMap<>();
     private final Map<java.util.UUID, String> instrumentIdToSymbol = new ConcurrentHashMap<>();
@@ -31,10 +32,12 @@ public class MatchingEngine {
     public MatchingEngine(
             OrderRepository orderRepository,
             InstrumentRepository instrumentRepository,
-            MatchingService matchingService) {
+            MatchingService matchingService,
+            MarketDataPublisher marketDataPublisher) {
         this.orderRepository = orderRepository;
         this.instrumentRepository = instrumentRepository;
         this.matchingService = matchingService;
+        this.marketDataPublisher = marketDataPublisher;
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -110,6 +113,9 @@ public class MatchingEngine {
         if (incoming.getRemainingQuantity().compareTo(BigDecimal.ZERO) > 0 && !incoming.getStatus().isTerminal()) {
             book.add(incoming);
         }
+
+        // Broadcast live order book update
+        marketDataPublisher.publishOrderBook(symbol, book);
     }
 
     public synchronized void cancel(Order order) {
@@ -119,6 +125,7 @@ public class MatchingEngine {
             if (book != null) {
                 book.remove(order);
                 log.debug("Removed cancelled order from book: id={}, symbol={}", order.getId(), symbol);
+                marketDataPublisher.publishOrderBook(symbol, book);
             }
         }
     }

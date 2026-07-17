@@ -36,4 +36,18 @@ public class AuthController {
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return userService.login(request);
     }
+
+    @GetMapping("/me")
+    public com.tradeforge.auth.web.dto.UserProfileResponse getProfile(org.springframework.security.core.Authentication authentication) {
+        java.util.UUID userId = java.util.UUID.fromString(authentication.getName());
+        return userService.getUserProfile(userId);
+    }
+
+    @PostMapping("/password")
+    public void changePassword(
+            @Valid @RequestBody com.tradeforge.auth.web.dto.ChangePasswordRequest request,
+            org.springframework.security.core.Authentication authentication) {
+        java.util.UUID userId = java.util.UUID.fromString(authentication.getName());
+        userService.changePassword(userId, request);
+    }
 }

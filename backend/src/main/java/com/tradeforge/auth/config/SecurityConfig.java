@@ -44,7 +44,8 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/v1/auth/**",
                     "/actuator/health",
-                    "/actuator/info"
+                    "/actuator/info",
+                    "/ws/**"
                 ).permitAll()
 
                 // Admin-only

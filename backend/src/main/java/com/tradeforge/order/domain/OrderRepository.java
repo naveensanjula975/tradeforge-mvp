@@ -18,6 +18,8 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
 
     Page<Order> findAllByUserIdOrderByCreatedAtDesc(UUID userId, Pageable pageable);
 
+    Page<Order> findAllByUserIdAndStatusOrderByCreatedAtDesc(UUID userId, OrderStatus status, Pageable pageable);
+
     /**
      * Active orders for a given instrument — used to rebuild the order book on startup.
      * Sorted by sequence number for deterministic replay.

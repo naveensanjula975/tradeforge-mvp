@@ -96,10 +96,11 @@ public class Account {
     /**
      * Apply a BUY execution: deduct the executed cost from balance and reserved cash.
      */
-    public void applyBuyExecution(BigDecimal executionPrice, BigDecimal executionQty) {
+    public void applyBuyExecution(BigDecimal executionPrice, BigDecimal executionQty, BigDecimal limitPrice) {
         BigDecimal cost = executionPrice.multiply(executionQty);
+        BigDecimal reservedAmount = limitPrice.multiply(executionQty);
         cashBalance  = cashBalance.subtract(cost);
-        reservedCash = reservedCash.subtract(cost).max(BigDecimal.ZERO);
+        reservedCash = reservedCash.subtract(reservedAmount).max(BigDecimal.ZERO);
     }
 
     /**

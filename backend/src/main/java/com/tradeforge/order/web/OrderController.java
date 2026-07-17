@@ -1,9 +1,11 @@
 package com.tradeforge.order.web;
 
+import com.tradeforge.order.domain.OrderStatus;
 import com.tradeforge.order.service.OrderService;
 import com.tradeforge.order.web.dto.OrderResponse;
 import com.tradeforge.order.web.dto.PlaceOrderRequest;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -44,5 +46,40 @@ public class OrderController {
             Authentication authentication) {
         UUID userId = UUID.fromString(authentication.getName());
         return orderService.submitOrder(userId, request);
+    }
+
+    /**
+     * Retrieve a single order by ID.
+     */
+    @GetMapping("/{id}")
+    public OrderResponse getOrder(
+            @PathVariable UUID id,
+            Authentication authentication) {
+        UUID userId = UUID.fromString(authentication.getName());
+        return orderService.getOrder(id, userId);
+    }
+
+    /**
+     * Retrieve a paginated list of orders for the authenticated user.
+     */
+    @GetMapping({"", "/me"})
+    public Page<OrderResponse> getOrders(
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            Authentication authentication) {
+        UUID userId = UUID.fromString(authentication.getName());
+        return orderService.getOrders(userId, status, page, size);
+    }
+
+    /**
+     * Cancel an active order.
+     */
+    @DeleteMapping("/{id}")
+    public OrderResponse cancelOrder(
+            @PathVariable UUID id,
+            Authentication authentication) {
+        UUID userId = UUID.fromString(authentication.getName());
+        return orderService.cancelOrder(id, userId);
     }
 }

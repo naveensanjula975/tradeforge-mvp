@@ -53,6 +53,11 @@ app:
   jwt:
     secret: ${JWT_SECRET}
     expiration-ms: ${JWT_EXPIRATION_MS:3600000}
+  market-hours:
+    enabled: ${APP_MARKET_HOURS_ENABLED:true}
+    timezone: ${APP_MARKET_HOURS_TIMEZONE:Asia/Colombo}
+    open: ${APP_MARKET_HOURS_OPEN:09:30}
+    close: ${APP_MARKET_HOURS_CLOSE:14:30}
 
 # ── Logging defaults ──────────────────────────────────────────────────────────
 logging:

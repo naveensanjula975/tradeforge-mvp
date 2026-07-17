@@ -41,4 +41,10 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
            ORDER BY o.instrumentId, o.sequenceNumber ASC
            """)
     List<Order> findAllActiveOrderByInstrumentAndSequence();
+
+    @Query("SELECT COALESCE(SUM(o.filledQuantity), 0) FROM Order o")
+    java.math.BigDecimal sumAllFilledQuantity();
+
+    @Query("SELECT COUNT(DISTINCT o.userId) FROM Order o")
+    long countDistinctUserIds();
 }

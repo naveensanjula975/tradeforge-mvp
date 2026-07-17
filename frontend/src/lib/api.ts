@@ -99,3 +99,18 @@ export const accountApi = {
       totalPnL: string;
     }>('/api/v1/account/statement').then((r) => r.data),
 };
+
+// ─── Admin ───────────────────────────────────────────────────────────────────
+export const adminApi = {
+  createInstrument: (data: { symbol: string; name: string; tickSize: string; lotSize: string }) =>
+    apiClient.post<Instrument>('/api/v1/admin/instruments', data).then((r) => r.data),
+
+  updateInstrumentStatus: (symbol: string, status: 'ACTIVE' | 'INACTIVE') =>
+    apiClient.patch<Instrument>(`/api/v1/admin/instruments/${symbol}/status`, null, { params: { status } }).then((r) => r.data),
+
+  getStats: () =>
+    apiClient.get<{ totalOrders: number; totalVolume: string; activeUsers: number }>('/api/v1/admin/instruments/stats').then((r) => r.data),
+
+  getOrderBook: (symbol: string) =>
+    apiClient.get<OrderBook>(`/api/v1/admin/instruments/${symbol}/orderbook`).then((r) => r.data),
+};

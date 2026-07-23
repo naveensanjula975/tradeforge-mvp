@@ -25,19 +25,33 @@ public class OrderEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderAccepted(OrderAcceptedEvent event) {
-        log.debug("Received OrderAcceptedEvent for matching: {}", event.orderId());
-        orderRepository.findById(event.orderId()).ifPresentOrElse(
-                matchingEngine::match,
-                () -> log.error("Order not found for matching: {}", event.orderId())
-        );
+        if (event.correlationId() != null) {
+            org.slf4j.MDC.put(com.tradeforge.common.web.CorrelationIdFilter.MDC_KEY, event.correlationId());
+        }
+        try {
+            log.debug("Received OrderAcceptedEvent for matching: {}", event.orderId());
+            orderRepository.findById(event.orderId()).ifPresentOrElse(
+                    matchingEngine::match,
+                    () -> log.error("Order not found for matching: {}", event.orderId())
+            );
+        } finally {
+            org.slf4j.MDC.remove(com.tradeforge.common.web.CorrelationIdFilter.MDC_KEY);
+        }
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderCancelled(OrderCancelledEvent event) {
-        log.debug("Received OrderCancelledEvent for book removal: {}", event.orderId());
-        orderRepository.findById(event.orderId()).ifPresentOrElse(
-                matchingEngine::cancel,
-                () -> log.error("Order not found for book removal: {}", event.orderId())
-        );
+        if (event.correlationId() != null) {
+            org.slf4j.MDC.put(com.tradeforge.common.web.CorrelationIdFilter.MDC_KEY, event.correlationId());
+        }
+        try {
+            log.debug("Received OrderCancelledEvent for book removal: {}", event.orderId());
+            orderRepository.findById(event.orderId()).ifPresentOrElse(
+                    matchingEngine::cancel,
+                    () -> log.error("Order not found for book removal: {}", event.orderId())
+            );
+        } finally {
+            org.slf4j.MDC.remove(com.tradeforge.common.web.CorrelationIdFilter.MDC_KEY);
+        }
     }
 }

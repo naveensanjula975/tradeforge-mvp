@@ -138,7 +138,8 @@ public class OrderService {
         log.info("Order accepted: id={}, clientId={}, seq={}", saved.getId(), saved.getClientOrderId(), sequenceNumber);
 
         // Publish event for matching (runs AFTER transaction commits)
-        eventPublisher.publishEvent(new OrderAcceptedEvent(saved.getId()));
+        String correlationId = org.slf4j.MDC.get(com.tradeforge.common.web.CorrelationIdFilter.MDC_KEY);
+        eventPublisher.publishEvent(new OrderAcceptedEvent(saved.getId(), correlationId));
 
         // Step 6: Return response
         return OrderResponse.from(saved);
@@ -212,7 +213,8 @@ public class OrderService {
         log.info("Order cancelled: id={}, user={}", saved.getId(), userId);
 
         // Publish event for order book removal (runs AFTER transaction commits)
-        eventPublisher.publishEvent(new OrderCancelledEvent(saved.getId()));
+        String correlationId = org.slf4j.MDC.get(com.tradeforge.common.web.CorrelationIdFilter.MDC_KEY);
+        eventPublisher.publishEvent(new OrderCancelledEvent(saved.getId(), correlationId));
 
         return OrderResponse.from(saved);
     }

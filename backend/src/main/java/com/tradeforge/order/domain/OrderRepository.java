@@ -14,6 +14,8 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
 
     boolean existsByUserIdAndClientOrderId(UUID userId, String clientOrderId);
 
+    Optional<Order> findByUserIdAndClientOrderId(UUID userId, String clientOrderId);
+
     Optional<Order> findByIdAndUserId(UUID id, UUID userId);
 
     Page<Order> findAllByUserIdOrderByCreatedAtDesc(UUID userId, Pageable pageable);

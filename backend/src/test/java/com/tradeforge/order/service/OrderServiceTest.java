@@ -33,6 +33,7 @@ class OrderServiceTest {
     private OrderValidationService orderValidationService;
     private AccountRepository accountRepository;
     private PositionRepository positionRepository;
+    private com.tradeforge.instrument.service.InstrumentService instrumentService;
     private org.springframework.context.ApplicationEventPublisher eventPublisher;
     private OrderService orderService;
 
@@ -42,8 +43,9 @@ class OrderServiceTest {
         orderValidationService = Mockito.mock(OrderValidationService.class);
         accountRepository = Mockito.mock(AccountRepository.class);
         positionRepository = Mockito.mock(PositionRepository.class);
+        instrumentService = Mockito.mock(com.tradeforge.instrument.service.InstrumentService.class);
         eventPublisher = Mockito.mock(org.springframework.context.ApplicationEventPublisher.class);
-        orderService = new OrderService(orderRepository, orderValidationService, accountRepository, positionRepository, eventPublisher);
+        orderService = new OrderService(orderRepository, orderValidationService, accountRepository, positionRepository, instrumentService, eventPublisher);
     }
 
     @Test

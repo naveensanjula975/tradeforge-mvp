@@ -34,6 +34,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * <p>Sequence numbers are assigned atomically to ensure deterministic order book ordering.
  * In a production system with clustering, sequence numbers would use a distributed counter.
  */
+import com.tradeforge.instrument.service.InstrumentService;
+import java.util.Optional;
+
 @Service
 public class OrderService {
 
@@ -43,6 +46,7 @@ public class OrderService {
     private final OrderValidationService orderValidationService;
     private final AccountRepository accountRepository;
     private final PositionRepository positionRepository;
+    private final InstrumentService instrumentService;
     private final ApplicationEventPublisher eventPublisher;
     private final AtomicLong sequenceCounter = new AtomicLong(1);
 
@@ -51,36 +55,41 @@ public class OrderService {
             OrderValidationService orderValidationService,
             AccountRepository accountRepository,
             PositionRepository positionRepository,
+            InstrumentService instrumentService,
             ApplicationEventPublisher eventPublisher) {
         this.orderRepository = orderRepository;
         this.orderValidationService = orderValidationService;
         this.accountRepository = accountRepository;
         this.positionRepository = positionRepository;
+        this.instrumentService = instrumentService;
         this.eventPublisher = eventPublisher;
     }
 
     /**
      * Submit a new order for acceptance.
-     *
-     * <ol>
-     *   <li>Validate all business rules via OrderValidationService.</li>
-     *   <li>Perform Risk Check: check balance (BUY) or position (SELL).</li>
-     *   <li>Create Order aggregate in PENDING_VALIDATION state.</li>
-     *   <li>Transition to ACCEPTED and assign sequence number.</li>
-     *   <li>Persist to database.</li>
-     *   <li>Log submission.</li>
-     *   <li>Return order response.</li>
-     * </ol>
-     *
-     * @param userId authenticated trader placing the order
-     * @param request validated PlaceOrderRequest
-     * @return order with ACCEPTED status and assigned sequence number
-     * @throws BusinessRuleException if any validation fails
      */
     @Transactional
     public OrderResponse submitOrder(UUID userId, PlaceOrderRequest request) {
         log.info("Order submission started: user={}, clientId={}, symbol={}, side={}, qty={}",
                 userId, request.clientOrderId(), request.symbol(), request.side(), request.quantity());
+
+        // Step 0: Check for duplicate client order ID (Idempotency Check)
+        Optional<Order> existingOpt = orderRepository.findByUserIdAndClientOrderId(userId, request.clientOrderId());
+        if (existingOpt.isPresent()) {
+            Order existing = existingOpt.get();
+            Instrument inst = instrumentService.requireBySymbol(request.symbol());
+            boolean matches = existing.getInstrumentId().equals(inst.getId())
+                    && existing.getSide() == request.side()
+                    && existing.getLimitPrice().compareTo(request.limitPrice()) == 0
+                    && existing.getOriginalQuantity().compareTo(request.quantity()) == 0;
+            if (matches) {
+                log.info("Idempotent order submission retry detected for clientOrderId={}", request.clientOrderId());
+                return OrderResponse.from(existing);
+            } else {
+                throw new BusinessRuleException(ErrorCode.ORDER_CLIENT_ID_DUPLICATE,
+                        "Client order ID '" + request.clientOrderId() + "' has already been used with different order parameters.");
+            }
+        }
 
         // Step 1: Validate all business rules
         Instrument instrument = orderValidationService.validate(

@@ -104,11 +104,7 @@ public class OrderValidationService {
         // Rule 4: Quantity on lot
         quantity.requireOnLot(instrument.getLotSize());
 
-        // Rule 6: Duplicate client order ID per user
-        if (orderRepository.existsByUserIdAndClientOrderId(userId, clientOrderId)) {
-            throw new BusinessRuleException(ErrorCode.ORDER_CLIENT_ID_DUPLICATE,
-                    "Client order ID '" + clientOrderId + "' has already been used.");
-        }
+        // Note: Rule 6 (Duplicate client order ID) is handled idempotently in OrderService
 
         // Rule 7: Market hours
         requireMarketOpen();
